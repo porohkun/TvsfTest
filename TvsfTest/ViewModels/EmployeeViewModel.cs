@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Data.Linq;
+using System.Threading.Tasks;
 using TvsfTest.Models;
 
 namespace TvsfTest
@@ -6,17 +8,10 @@ namespace TvsfTest
     public class EmployeeViewModel : BindableBase
     {
         private EmployeeModel _model;
+        private DataContext _context;
 
-        public int Id
-        {
-            get => _model.Id;
-            set => SetProperty(ref _model.Id, value);
-        }
-        public int OrganizationId
-        {
-            get => _model.OrganizationId;
-            set => SetProperty(ref _model.OrganizationId, value);
-        }
+        public int Id => _model.Id;
+        public int OrganizationId => _model.OrganizationId;
         public string Surname
         {
             get => _model.Surname;
@@ -48,9 +43,15 @@ namespace TvsfTest
             set => SetProperty(ref _model.Description, value);
         }
 
-        public EmployeeViewModel(EmployeeModel model)
+        public EmployeeViewModel(EmployeeModel model, DataContext context)
         {
             _model = model;
+            _context = context;
+        }
+
+        protected override void OnPropertyChanged(string propertyName)
+        {
+            Task.Run(_context.SubmitChanges);
         }
     }
 }

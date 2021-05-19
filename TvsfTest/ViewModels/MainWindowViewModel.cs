@@ -9,8 +9,8 @@ namespace TvsfTest
     {
         public MainWindowViewModelDummy()
         {
-            Organizations.Add(new OrganizationViewModel(new Models.OrganizationModel() { Id = 1, INN = 5553535, Name = "ООО Пальто", LegalAddress = "Не дом и не улица", PhysicalAddress = "Деревня дедушки", Description = "Не звонить" }));
-            Organizations.Add(new OrganizationViewModel(new Models.OrganizationModel() { Id = 2, INN = 5553535, Name = "ООО Пальто", LegalAddress = "Не дом и не улица", PhysicalAddress = "Деревня дедушки", Description = "Не звонить" }));
+            Organizations.Add(new OrganizationViewModel(new Models.OrganizationModel() { Id = 1, INN = 5553535, Name = "ООО Пальто", LegalAddress = "Не дом и не улица", PhysicalAddress = "Деревня дедушки", Description = "Не звонить" }, null));
+            Organizations.Add(new OrganizationViewModel(new Models.OrganizationModel() { Id = 2, INN = 5553535, Name = "ООО Пальто", LegalAddress = "Не дом и не улица", PhysicalAddress = "Деревня дедушки", Description = "Не звонить" }, null));
         }
     }
 
@@ -43,8 +43,8 @@ namespace TvsfTest
                         App.Current.Dispatcher.Invoke(() =>
                         {
                             Organizations.Clear();
-                            foreach (var org in task.Result)
-                                Organizations.Add(new OrganizationViewModel(org));
+                            foreach (var org in task.Result.Item2)
+                                Organizations.Add(new OrganizationViewModel(org, task.Result.Item1));
                         });
                 }
                 catch (Exception e)
@@ -56,16 +56,19 @@ namespace TvsfTest
 
         private void RefreshEmployees(OrganizationViewModel organization)
         {
-            organization.GetEmployees().ContinueWith(task =>
-            {
-                if (task.IsCompleted)
-                    App.Current.Dispatcher.Invoke(() =>
-                    {
-                        Employees.Clear();
-                        foreach (var empl in task.Result)
-                            Employees.Add(new EmployeeViewModel(empl));
-                    });
-            });
+            if (organization == null)
+                App.Current.Dispatcher.Invoke(Employees.Clear);
+            else
+                organization.GetEmployees().ContinueWith(task =>
+                {
+                    if (task.IsCompleted)
+                        App.Current.Dispatcher.Invoke(() =>
+                        {
+                            Employees.Clear();
+                            foreach (var empl in task.Result.Item2)
+                                Employees.Add(new EmployeeViewModel(empl, task.Result.Item1));
+                        });
+                });
         }
     }
 }

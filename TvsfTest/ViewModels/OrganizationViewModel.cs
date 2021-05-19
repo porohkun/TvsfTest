@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Data.Linq;
 using System.Threading.Tasks;
 using TvsfTest.Models;
 using TvsfTest.Services;
@@ -8,12 +9,9 @@ namespace TvsfTest
     public class OrganizationViewModel : BindableBase
     {
         private OrganizationModel _model;
+        private DataContext _context;
 
-        public int Id
-        {
-            get => _model.Id;
-            set => SetProperty(ref _model.Id, value);
-        }
+        public int Id => _model.Id;
         public string Name
         {
             get => _model.Name;
@@ -40,14 +38,20 @@ namespace TvsfTest
             set => SetProperty(ref _model.Description, value);
         }
 
-        public OrganizationViewModel(OrganizationModel model)
+        public OrganizationViewModel(OrganizationModel model, DataContext context)
         {
             _model = model;
+            _context = context;
         }
 
-        public async Task<IEnumerable<EmployeeModel>> GetEmployees()
+        public async Task<(DataContext, IEnumerable<EmployeeModel>)> GetEmployees()
         {
             return await DatabaseService.GetEmployees(_model);
+        }
+
+        protected override void OnPropertyChanged(string propertyName)
+        {
+            Task.Run(_context.SubmitChanges);
         }
     }
 }

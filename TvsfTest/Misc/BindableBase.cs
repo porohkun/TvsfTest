@@ -13,10 +13,13 @@ namespace TvsfTest
             {
                 storage = value;
                 RaisePropertyChanged(propertyName);
+                OnPropertyChanged(propertyName);
                 return true;
             }
             return false;
         }
+
+        protected virtual void OnPropertyChanged(string propertyName) { }
 
         public void RaisePropertyChanged([CallerMemberName] string propertyName = null)
         {
