@@ -35,6 +35,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="fastCSV, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\mgholam.fastCSV.2.0.9\lib\net40\fastCSV.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
@@ -57,8 +60,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Commands\ExportToCsvCommand.cs" />
     <Compile Include="Misc\DelegateCommand.cs" />
-    <Compile Include="Misc\Singleton.cs" />
+    <Compile Include="Misc\InjectableCommand.cs" />
+    <Compile Include="Misc\TypeExtensions.cs" />
     <Compile Include="Models\EmployeeModel.cs" />
     <Compile Include="Models\OrganizationModel.cs" />
     <Compile Include="Services\DatabaseService.cs" />
@@ -98,6 +103,7 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
