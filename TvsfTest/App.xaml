@@ -8,5 +8,7 @@
         <local:MainWindowViewModelDummy x:Key="MainWindowViewModelDummy"/>
 
         <local:NullToBoolConverter x:Key="NullToBoolConverter"/>
+        <local:LongToPassportConverter x:Key="LongToPassportConverter"/>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
     </Application.Resources>
 </Application>
