@@ -1,7 +1,13 @@
-﻿using System;
+﻿using CsvHelper;
+using Microsoft.Win32;
 using System.Collections.ObjectModel;
-using System.Windows;
+using System.Diagnostics;
+using System.Globalization;
+using System.IO;
+using System.Threading.Tasks;
 using System.Windows.Input;
+using TvsfTest.Models;
+using TvsfTest.Services;
 
 namespace TvsfTest
 {
@@ -27,30 +33,27 @@ namespace TvsfTest
         }
 
         public ICommand RefreshOrganizationsCommand { get; }
+        public ICommand ImportFromCsvCommand { get; }
+        public ICommand ExportToCsvCommand { get; }
 
         public MainWindowViewModel()
         {
             RefreshOrganizationsCommand = new DelegateCommand(RefreshOrganizations);
+            ImportFromCsvCommand = new DelegateCommand(ImportFromCsv);
+            ExportToCsvCommand = new DelegateCommand(ExportToCsv);
         }
 
         private void RefreshOrganizations()
         {
-            Services.DatabaseService.GetOrganizations().ContinueWith(task =>
+            DatabaseService.GetOrganizations().ContinueWith(task =>
             {
-                try
-                {
-                    if (task.IsCompleted)
-                        App.Current.Dispatcher.Invoke(() =>
-                        {
-                            Organizations.Clear();
-                            foreach (var org in task.Result.Item2)
-                                Organizations.Add(new OrganizationViewModel(org, task.Result.Item1));
-                        });
-                }
-                catch (Exception e)
-                {
-                    MessageBox.Show(e.Message);
-                }
+                if (task.IsCompleted)
+                    App.Current.Dispatcher.Invoke(() =>
+                    {
+                        Organizations.Clear();
+                        foreach (var org in task.Result.Item2)
+                            Organizations.Add(new OrganizationViewModel(org, task.Result.Item1));
+                    });
             });
         }
 
@@ -69,6 +72,48 @@ namespace TvsfTest
                                 Employees.Add(new EmployeeViewModel(empl, task.Result.Item1));
                         });
                 });
+        }
+
+        private void ImportFromCsv()
+        {
+            var dialog = new OpenFileDialog();
+            dialog.Filter = "csv file|*.csv";
+            dialog.DefaultExt = "csv";
+            if (dialog.ShowDialog().Value)
+            {
+                using (var reader = new StreamReader(dialog.FileName))
+                using (var csv = new CsvReader(reader, new CsvHelper.Configuration.CsvConfiguration(CultureInfo.InvariantCulture)
+                {
+                    MissingFieldFound = null
+                }))
+                {
+                    csv.Context.RegisterClassMap<EmployeeMap>();
+
+                    DatabaseService.BulkCopy(csv.GetRecords<EmployeeModel>(), SelectedOrganization).ContinueWith(task =>
+                    {
+                        RefreshEmployees(SelectedOrganization);
+                    });
+                }
+            }
+        }
+
+        private void ExportToCsv()
+        {
+            var dialog = new SaveFileDialog();
+            dialog.Filter = "csv file|*.csv";
+            dialog.DefaultExt = "csv";
+            if (dialog.ShowDialog().Value)
+            {
+                Task.Run(() =>
+                {
+                    using (var writer = new StreamWriter(dialog.FileName))
+                    using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
+                    {
+                        csv.WriteRecords(Employees);
+                    }
+                    Process.Start("explorer.exe", $"/select, \"{dialog.FileName}\"");
+                });
+            }
         }
     }
 }

@@ -12,8 +12,12 @@
     <DockPanel LastChildFill="True">
         <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="4" local:MarginSetter.Margin="4,4">
             <Button Content="Загрузить из БД" Command="{Binding RefreshOrganizationsCommand}"/>
-            <Button Content="Импорт из CSV"/>
-            <Button Content="Экспорт в CSV" Command="{StaticResource ExportToCsvCommand}" CommandParameter="{Binding Employees}"/>
+            <Button Content="Импорт из CSV"
+                    IsEnabled="{Binding SelectedOrganization,Converter={StaticResource NullToBoolConverter}}"
+                    Command="{Binding ImportFromCsvCommand}"/>
+            <Button Content="Экспорт в CSV"
+                    IsEnabled="{Binding SelectedOrganization,Converter={StaticResource NullToBoolConverter}}"
+                    Command="{Binding ExportToCsvCommand}"/>
         </StackPanel>
         <Grid>
             <Grid.RowDefinitions>

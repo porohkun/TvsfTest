@@ -2,7 +2,7 @@
 
 namespace TvsfTest.Models
 {
-    [Table(Name = "organizations")]
+    [Table(Name = "organization")]
     public class OrganizationModel
     {
         [Column(Name = "id", IsPrimaryKey = true, IsDbGenerated = true)]
