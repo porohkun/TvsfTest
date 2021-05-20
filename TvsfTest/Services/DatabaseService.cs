@@ -32,7 +32,7 @@ namespace TvsfTest.Services
             });
         }
 
-        public static async Task BulkCopy(IEnumerable<EmployeeModel> employees, OrganizationViewModel targetOrganization)
+        public static async Task MergeEmployeesIntoOrganization(IEnumerable<EmployeeModel> employees, OrganizationViewModel targetOrganization)
         {
             var table = new DataTable();
             table.Columns.Add("organization_id", typeof(int));

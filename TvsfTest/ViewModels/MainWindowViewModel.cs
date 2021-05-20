@@ -1,6 +1,7 @@
 ﻿using CsvHelper;
 using Microsoft.Win32;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
@@ -54,17 +55,15 @@ namespace TvsfTest
             ExportToCsvCommand = new DelegateCommand(ExportToCsv);
         }
 
-        private void RefreshOrganizations()
+        private void WrapAsyncAction<T>(Task<T> getTask, Action<T> resultAction)
         {
             Busy = true;
-            DatabaseService.GetOrganizations().ContinueWith(task =>
+            getTask.ContinueWith(task =>
             {
                 if (task.Status == TaskStatus.RanToCompletion)
                     App.Current.Dispatcher.Invoke(() =>
                     {
-                        Organizations.Clear();
-                        foreach (var org in task.Result.Item2)
-                            Organizations.Add(new OrganizationViewModel(org, task.Result.Item1));
+                        resultAction?.Invoke(task.Result);
                         Busy = false;
                     });
                 else
@@ -76,66 +75,77 @@ namespace TvsfTest
             });
         }
 
+        private void RefreshOrganizations()
+        {
+            WrapAsyncAction(DatabaseService.GetOrganizations(),
+                result =>
+                {
+                    Organizations.Clear();
+                    foreach (var org in result.Item2)
+                        Organizations.Add(new OrganizationViewModel(org, result.Item1));
+                });
+        }
+
         private void RefreshEmployees(OrganizationViewModel organization)
         {
-            Busy = true;
             if (organization == null)
-            {
                 App.Current.Dispatcher.Invoke(Employees.Clear);
-                Busy = false;
-            }
             else
-                organization.GetEmployees().ContinueWith(task =>
-                {
-                    if (task.Status == TaskStatus.RanToCompletion)
-                        App.Current.Dispatcher.Invoke(() =>
-                        {
-                            Employees.Clear();
-                            foreach (var empl in task.Result.Item2)
-                                Employees.Add(new EmployeeViewModel(empl, task.Result.Item1));
-                            Busy = false;
-                        });
-                    else
-                        Busy = false;
-                });
+                WrapAsyncAction(organization.GetEmployees(),
+                    result =>
+                    {
+                        Employees.Clear();
+                        foreach (var empl in result.Item2)
+                            Employees.Add(new EmployeeViewModel(empl, result.Item1));
+                    });
         }
 
         private void ImportFromCsv()
         {
-            var dialog = new OpenFileDialog();
-            dialog.Filter = "csv file|*.csv";
-            dialog.DefaultExt = "csv";
+            var dialog = new OpenFileDialog()
+            {
+                Filter = "csv file|*.csv",
+                DefaultExt = "csv"
+            };
             if (dialog.ShowDialog().Value)
             {
-                using (var reader = new StreamReader(dialog.FileName))
-                using (var csv = new CsvReader(reader, new CsvHelper.Configuration.CsvConfiguration(CultureInfo.InvariantCulture) { MissingFieldFound = null }))
+                async Task<object> ImportAndMerge(string filename, OrganizationViewModel organization)
                 {
-                    csv.Context.RegisterClassMap<EmployeeMap>();
-
-                    DatabaseService.BulkCopy(csv.GetRecords<EmployeeModel>(), SelectedOrganization).ContinueWith(task =>
+                    using (var reader = new StreamReader(filename))
+                    using (var csv = new CsvReader(reader, new CsvHelper.Configuration.CsvConfiguration(CultureInfo.InvariantCulture) { MissingFieldFound = null }))
                     {
-                        RefreshEmployees(SelectedOrganization);
-                    });
+                        csv.Context.RegisterClassMap<EmployeeMap>();
+
+                        await DatabaseService.MergeEmployeesIntoOrganization(csv.GetRecords<EmployeeModel>(), organization);
+                    }
+                    return null;
                 }
+
+                WrapAsyncAction(ImportAndMerge(dialog.FileName, SelectedOrganization), result => RefreshEmployees(SelectedOrganization));
             }
         }
 
         private void ExportToCsv()
         {
-            var dialog = new SaveFileDialog();
-            dialog.Filter = "csv file|*.csv";
-            dialog.DefaultExt = "csv";
+            var dialog = new SaveFileDialog()
+            {
+                Filter = "csv file|*.csv",
+                DefaultExt = "csv"
+            };
             if (dialog.ShowDialog().Value)
             {
-                Task.Run(() =>
+                async Task<object> Export(string filename, IEnumerable<EmployeeViewModel> employees)
                 {
-                    using (var writer = new StreamWriter(dialog.FileName))
+                    using (var writer = new StreamWriter(filename))
                     using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
                     {
-                        csv.WriteRecords(Employees);
+                        csv.WriteRecords(employees);
                     }
-                    Process.Start("explorer.exe", $"/select, \"{dialog.FileName}\"");
-                });
+                    Process.Start("explorer.exe", $"/select, \"{filename}\"");
+                    return null;
+                }
+
+                WrapAsyncAction(Export(dialog.FileName, Employees), result => RefreshEmployees(SelectedOrganization));
             }
         }
     }
