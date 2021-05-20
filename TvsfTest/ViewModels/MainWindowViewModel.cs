@@ -18,8 +18,8 @@ namespace TvsfTest
     {
         public MainWindowViewModelDummy()
         {
-            Organizations.Add(new OrganizationViewModel(new OrganizationModel() { Id = 1, INN = 5553535, Name = "ООО Пальто", LegalAddress = "Не дом и не улица", PhysicalAddress = "Деревня дедушки", Description = "Не звонить" }, null));
-            Organizations.Add(new OrganizationViewModel(new OrganizationModel() { Id = 2, INN = 5553535, Name = "ООО Пальто", LegalAddress = "Не дом и не улица", PhysicalAddress = "Деревня дедушки", Description = "Не звонить" }, null));
+            Organizations.Add(new OrganizationViewModel(new OrganizationModel() { Id = 1, INN = 5553535354, Name = "ООО Пальто", LegalAddress = "Не дом и не улица", PhysicalAddress = "Деревня дедушки", Description = "Не звонить" }, null));
+            Organizations.Add(new OrganizationViewModel(new OrganizationModel() { Id = 2, INN = 5553535354, Name = "ООО Пальто", LegalAddress = "Не дом и не улица", PhysicalAddress = "Деревня дедушки", Description = "Не звонить" }, null));
             Employees.Add(new EmployeeViewModel(new EmployeeModel() { Id = 1, OrganizationId = 1, Surname = "Боширов", Name = "Руслан", MiddleName = "Тимурович", BirthDate = DateTime.Now, PassportNumber = 1122333444, Description = "Любит шпили" }, null));
             Employees.Add(new EmployeeViewModel(new EmployeeModel() { Id = 12, OrganizationId = 1, Surname = "Петров", Name = "Александр", MiddleName = "Евгеньевич", BirthDate = DateTime.Now, PassportNumber = 1122444333, Description = "Тоже любит" }, null));
         }

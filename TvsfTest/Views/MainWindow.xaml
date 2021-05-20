@@ -74,11 +74,11 @@
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="#" Binding="{Binding Id, Mode=OneWay}"/>
                         <DataGridTextColumn Header="Название" Binding="{Binding Name}"/>
-                        <DataGridTextColumn Header="ИНН" Binding="{Binding INN}"/>
-                        <DataGridTextColumn Header="Юридический адрес" Binding="{Binding LegalAddress}"/>
-                        <DataGridTextColumn Header="Физический адрес" Binding="{Binding PhysicalAddress}"/>
-                        <DataGridTextColumn Header="Примечание" Binding="{Binding Description}"/>
-                        <DataGridTemplateColumn Width="*"/>
+                        <DataGridTextColumn Header="ИНН" Binding="{Binding INN}" MinWidth="72"/>
+                        <DataGridTextColumn Header="Юридический адрес" Binding="{Binding LegalAddress}" MinWidth="100"/>
+                        <DataGridTextColumn Header="Физический адрес" Binding="{Binding PhysicalAddress}" MinWidth="100"/>
+                        <DataGridTextColumn Header="Примечание" Binding="{Binding Description}" MinWidth="100"/>
+                        <DataGridTemplateColumn Width="*" MinWidth="5"/>
                     </DataGrid.Columns>
                 </DataGrid>
 
